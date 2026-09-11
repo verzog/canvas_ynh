@@ -65,10 +65,10 @@ ram.runtime = "2G"
 [resources]
     [resources.sources.main]
     # Canvas releases as dated tags (release/YYYY-MM-DD.NN), not versioned tarballs.
-    # NOTE: sha256 is a placeholder — it MUST be filled with the real archive hash
-    # before this package can install. See scripts/_common.sh (canvas_version).
+    # NOTE: GitHub auto-generated archive checksums are not guaranteed stable over
+    # time — if a future re-fetch fails on hash mismatch, recompute and update this.
     url = "https://github.com/instructure/canvas-lms/archive/refs/tags/release/2026-05-20.143.tar.gz"
-    sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
+    sha256 = "b3e03aaaff81d68730d67392a135ac3fdfdf022880c66632ab188d2fe084cda3"
     in_subdir = true
     autoupdate.strategy = "latest_github_tag"
 
