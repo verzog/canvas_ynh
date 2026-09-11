@@ -1,0 +1,109 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC START
+#=================================================
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# STAGE 1 — SOURCE, SYSTEM DEPS, DATABASE, REDIS
+#=================================================
+# apt packages (incl. redis-server) and the PostgreSQL database are provisioned
+# automatically by the [resources] block in manifest.toml before this script runs.
+
+ynh_script_progression "Setting up source files..."
+# Deploys the Canvas release tarball into $install_dir.
+ynh_setup_source --dest_dir="$install_dir"
+
+# A Rails secret used by security.yml (encryption_key must be >= 20 chars).
+encryption_key=$(ynh_string_random --length=40)
+ynh_app_setting_set --key=encryption_key --value="$encryption_key"
+
+# Install Node.js (Canvas engines: node >= 20) and Yarn classic.
+ynh_script_progression "Installing Node.js and Yarn..."
+ynh_nodejs_install
+ynh_hide_warnings npm install --global yarn@1.19.1
+
+#=================================================
+# STAGE 2 — RUBY 3.4 + GEM DEPENDENCIES
+#=================================================
+# NOTE: build_ruby + bundle install is the highest-risk part. Validate on a live
+# YunoHost 12.x (Trixie) box before trusting this end to end.
+
+build_ruby
+
+ynh_script_progression "Installing Ruby gem dependencies (bundle install)..."
+pushd "$install_dir" >/dev/null
+    ruby_exec gem install bundler
+    # Production only: skip development/test gem groups.
+    ruby_exec bundle config set --local without 'development test'
+    ruby_exec bundle config set --local path "$install_dir/vendor/bundle"
+    ruby_exec bundle install --jobs=4
+popd >/dev/null
+
+ynh_script_progression "Installing JavaScript dependencies (yarn install)..."
+pushd "$install_dir" >/dev/null
+    ruby_exec yarn install --pure-lockfile
+popd >/dev/null
+
+#=================================================
+# STAGE 3 — CANVAS CONFIGURATION FILES
+#=================================================
+
+ynh_script_progression "Configuring Canvas..."
+
+# Each of these templates lives in ../conf/ and is filled from install settings.
+ynh_config_add --template="database.yml"      --destination="$install_dir/config/database.yml"
+ynh_config_add --template="security.yml"      --destination="$install_dir/config/security.yml"
+ynh_config_add --template="domain.yml"        --destination="$install_dir/config/domain.yml"
+ynh_config_add --template="outgoing_mail.yml" --destination="$install_dir/config/outgoing_mail.yml"
+ynh_config_add --template="redis.yml"         --destination="$install_dir/config/redis.yml"
+ynh_config_add --template="cache_store.yml"   --destination="$install_dir/config/cache_store.yml"
+
+#=================================================
+# STAGE 4 — DATABASE SCHEMA + FIRST ADMIN + ASSETS
+#=================================================
+
+ynh_script_progression "Initialising the Canvas database (schema + first admin)..."
+# db:initial_setup is normally interactive; these env vars drive it non-interactively.
+pushd "$install_dir" >/dev/null
+    RAILS_ENV=production \
+    CANVAS_LMS_ADMIN_EMAIL="$admin_email" \
+    CANVAS_LMS_ADMIN_PASSWORD="$password" \
+    CANVAS_LMS_ACCOUNT_NAME="$app" \
+    CANVAS_LMS_STATS_COLLECTION="opt_out" \
+        ruby_exec bundle exec rake db:initial_setup
+popd >/dev/null
+
+compile_assets
+
+#=================================================
+# STAGE 5 — SYSTEM SERVICES (WEB + JOBS) + NGINX
+#=================================================
+
+ynh_script_progression "Configuring system services..."
+# Two long-running services: the Puma web server and the delayed_job worker.
+ynh_config_add_systemd --service="$app-web"  --template="canvas-web.service"
+ynh_config_add_systemd --service="$app-jobs" --template="canvas-jobs.service"
+
+yunohost service add "$app-web"  --description="Canvas LMS web server" --log="/var/log/$app/production.log"
+yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="/var/log/$app/delayed_job.log"
+
+ynh_script_progression "Configuring NGINX web server..."
+ynh_config_add_nginx
+
+#=================================================
+# START SERVICES
+#=================================================
+
+ynh_script_progression "Starting Canvas services..."
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+ynh_systemctl --service="$app-jobs" --action="start"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression "Installation of Canvas LMS completed"

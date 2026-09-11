@@ -1,0 +1,9 @@
+production:
+  adapter: postgresql
+  encoding: utf8
+  database: __DB_NAME__
+  host: localhost
+  username: __DB_USER__
+  password: "__DB_PWD__"
+  timeout: 5000
+  pool: 5

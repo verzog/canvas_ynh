@@ -1,0 +1,3 @@
+production:
+  # Used by Canvas to encrypt sensitive data at rest. Must be >= 20 characters.
+  encryption_key: "__ENCRYPTION_KEY__"

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# RESTORE FILES
+#=================================================
+
+ynh_script_progression "Restoring the app files..."
+ynh_restore --src_path="$install_dir"
+
+ynh_script_progression "Restoring user data..."
+ynh_restore --src_path="$data_dir" --not_mandatory
+
+#=================================================
+# RESTORE THE POSTGRESQL DATABASE
+#=================================================
+
+ynh_script_progression "Restoring the PostgreSQL database..."
+ynh_psql_db_shell < ./db.sql
+
+#=================================================
+# RESTORE SYSTEM INTEGRATION
+#=================================================
+
+ynh_script_progression "Restoring system configuration..."
+ynh_restore --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore --src_path="/etc/systemd/system/$app-web.service"
+ynh_restore --src_path="/etc/systemd/system/$app-jobs.service"
+
+# Re-register Node.js for this app (versioned install is per-app).
+ynh_nodejs_install
+
+yunohost service add "$app-web"  --description="Canvas LMS web server" --log="/var/log/$app/production.log"
+yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="/var/log/$app/delayed_job.log"
+
+#=================================================
+# START SERVICES + RELOAD NGINX
+#=================================================
+
+ynh_script_progression "Starting Canvas services..."
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+ynh_systemctl --service="$app-jobs" --action="start"
+
+ynh_systemctl --service=nginx --action=reload
+
+ynh_script_progression "Restoration of Canvas LMS completed"

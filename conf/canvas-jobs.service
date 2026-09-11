@@ -1,0 +1,18 @@
+[Unit]
+Description=Canvas LMS background jobs (delayed_job)
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__INSTALL_DIR__
+Environment=RAILS_ENV=production
+Environment=RBENV_ROOT=__INSTALL_DIR__/.rbenv
+Environment=PATH=__INSTALL_DIR__/.rbenv/shims:__INSTALL_DIR__/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=__INSTALL_DIR__/.rbenv/shims/bundle exec script/delayed_job run
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

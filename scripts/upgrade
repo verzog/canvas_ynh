@@ -1,0 +1,71 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# STOP SERVICES DURING UPGRADE
+#=================================================
+
+ynh_script_progression "Stopping Canvas services..."
+ynh_systemctl --service="$app-web"  --action="stop"
+ynh_systemctl --service="$app-jobs" --action="stop"
+
+#=================================================
+# UPGRADE SOURCE (PRESERVE CONFIG + DATA)
+#=================================================
+
+ynh_script_progression "Upgrading source files..."
+# keep prevents the upgrade from clobbering generated config and uploaded files.
+ynh_setup_source --dest_dir="$install_dir" \
+    --keep="config/database.yml config/security.yml config/domain.yml config/outgoing_mail.yml config/redis.yml config/cache_store.yml"
+
+#=================================================
+# UPGRADE RUBY + DEPENDENCIES
+#=================================================
+
+# Rebuilds Ruby only if _common.sh now pins a different version.
+build_ruby
+
+ynh_script_progression "Updating Ruby gem dependencies..."
+pushd "$install_dir" >/dev/null
+    ruby_exec gem install bundler
+    ruby_exec bundle config set --local without 'development test'
+    ruby_exec bundle config set --local path "$install_dir/vendor/bundle"
+    ruby_exec bundle install --jobs=4
+popd >/dev/null
+
+ynh_script_progression "Updating JavaScript dependencies..."
+pushd "$install_dir" >/dev/null
+    ruby_exec yarn install --pure-lockfile
+popd >/dev/null
+
+#=================================================
+# DATABASE MIGRATIONS + ASSET RECOMPILE
+#=================================================
+
+ynh_script_progression "Running database migrations..."
+pushd "$install_dir" >/dev/null
+    RAILS_ENV=production ruby_exec bundle exec rake db:migrate
+popd >/dev/null
+
+compile_assets
+
+#=================================================
+# RECONFIGURE SYSTEM INTEGRATION
+#=================================================
+
+ynh_script_progression "Upgrading system configuration..."
+ynh_config_add_systemd --service="$app-web"  --template="canvas-web.service"
+ynh_config_add_systemd --service="$app-jobs" --template="canvas-jobs.service"
+ynh_config_add_nginx
+
+#=================================================
+# START SERVICES
+#=================================================
+
+ynh_script_progression "Starting Canvas services..."
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+ynh_systemctl --service="$app-jobs" --action="start"
+
+ynh_script_progression "Upgrade of Canvas LMS completed"

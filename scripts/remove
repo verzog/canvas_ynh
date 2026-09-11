@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# REMOVE SYSTEM SERVICES
+#=================================================
+
+ynh_script_progression "Removing system services..."
+
+if ynh_hide_warnings yunohost service status "$app-web" >/dev/null 2>&1; then
+    yunohost service remove "$app-web"
+fi
+if ynh_hide_warnings yunohost service status "$app-jobs" >/dev/null 2>&1; then
+    yunohost service remove "$app-jobs"
+fi
+
+ynh_config_remove_systemd --service="$app-web"
+ynh_config_remove_systemd --service="$app-jobs"
+
+#=================================================
+# REMOVE NGINX + NODE
+#=================================================
+
+ynh_script_progression "Removing NGINX configuration..."
+ynh_config_remove_nginx
+
+ynh_script_progression "Removing Node.js..."
+ynh_nodejs_remove
+
+# The apt packages, PostgreSQL database, system user, install_dir and data_dir
+# declared in manifest.toml are removed automatically by the resource system.
+
+ynh_script_progression "Removal of Canvas LMS completed"

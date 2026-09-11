@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# DECLARE DATA AND CONF FILES TO BACK UP
+#=================================================
+
+ynh_print_info "Declaring files to be backed up..."
+
+# App code, vendored gems, built assets and rbenv Ruby (large — see README).
+ynh_backup --src_path="$install_dir"
+
+# Uploaded files and generated exports.
+ynh_backup --src_path="$data_dir" --is_big
+
+# System integration.
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/systemd/system/$app-web.service"
+ynh_backup --src_path="/etc/systemd/system/$app-jobs.service"
+
+#=================================================
+# BACK UP THE POSTGRESQL DATABASE
+#=================================================
+
+ynh_print_info "Backing up the PostgreSQL database..."
+ynh_psql_dump_db > db.sql
+
+ynh_print_info "Backup script completed. Run 'yunohost backup create' to make a backup."

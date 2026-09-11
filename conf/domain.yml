@@ -1,0 +1,3 @@
+production:
+  domain: "__DOMAIN__"
+  ssl: true

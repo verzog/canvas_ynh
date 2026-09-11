@@ -1,0 +1,7 @@
+production:
+  # Sends through the local YunoHost mail stack (Postfix on localhost).
+  address: "localhost"
+  port: 25
+  domain: "__DOMAIN__"
+  outgoing_address: "no-reply@__DOMAIN__"
+  default_name: "Canvas"

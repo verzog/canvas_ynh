@@ -1,0 +1,10 @@
+test_format = 1.0
+
+[default]
+
+    # Canvas is a full-domain app installed at the root of its domain.
+    # There is no subpath or multi-instance scenario to exercise.
+    exclude = ["install.subdir", "install.multi"]
+
+    # Asset compilation is very slow; give the test runner extra time.
+    [default.test_upgrade_from]

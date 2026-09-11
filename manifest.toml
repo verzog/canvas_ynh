@@ -1,0 +1,121 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/manifest.v2.schema.json
+
+packaging_format = 2
+
+id = "canvas"
+name = "Canvas LMS"
+description.en = "Open-source Learning Management System by Instructure"
+description.fr = "Plateforme d'apprentissage libre développée par Instructure"
+
+version = "2026.05.20.143~ynh1"
+
+maintainers = ["verzog"]
+
+[upstream]
+license = "AGPL-3.0-or-later"
+website = "https://www.instructure.com/canvas"
+admindoc = "https://github.com/instructure/canvas-lms/wiki"
+code = "https://github.com/instructure/canvas-lms"
+
+[integration]
+yunohost = ">= 12.0.0"
+helpers_version = "2.1"
+# Canvas asset compilation (webpack) is heavy and effectively amd64/arm64 only.
+architectures = ["amd64", "arm64"]
+multi_instance = false
+# Canvas ships its own auth stack (SAML/CAS/LDAP/local). It does not integrate
+# with YunoHost SSO out of the box; LDAP against YunoHost is configurable later.
+ldap = "not_relevant"
+sso = "not_relevant"
+# Canvas must own the root of a domain; it does not run cleanly under a subpath.
+fulldomain = true
+# Sizing: the webpack asset build needs several GB of RAM; runtime needs ~2G.
+disk = "12G"
+ram.build = "4G"
+ram.runtime = "2G"
+
+[install]
+    [install.domain]
+    type = "domain"
+    full_domain = true
+
+    [install.init_main_permission]
+    help.en = "Canvas has its own account system. This only controls who can reach the login page."
+    type = "group"
+    default = "visitors"
+
+    [install.admin]
+    type = "user"
+
+    [install.admin_email]
+    ask.en = "Email address for the first Canvas administrator account"
+    ask.fr = "Adresse e-mail du premier compte administrateur Canvas"
+    type = "string"
+
+    [install.password]
+    help.en = "Password for the first Canvas administrator account (min 8 characters)"
+    type = "password"
+
+    [install.language]
+    ask.en = "Default interface language"
+    type = "select"
+    choices = ["en", "en-AU", "en-GB", "fr"]
+    default = "en"
+
+[resources]
+    [resources.sources.main]
+    # Canvas releases as dated tags (release/YYYY-MM-DD.NN), not versioned tarballs.
+    # NOTE: sha256 is a placeholder — it MUST be filled with the real archive hash
+    # before this package can install. See scripts/_common.sh (canvas_version).
+    url = "https://github.com/instructure/canvas-lms/archive/refs/tags/release/2026-05-20.143.tar.gz"
+    sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
+    in_subdir = true
+    autoupdate.strategy = "latest_github_tag"
+
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.data_dir]
+    # Uploaded files, generated exports, and locally-stored attachments.
+    subdirs = ["files", "tmp"]
+
+    [resources.permissions]
+        [resources.permissions.main]
+        url = "/"
+
+    [resources.ports]
+        [resources.ports.main]
+        # Internal port the app server (Puma) listens on; nginx reverse-proxies to it.
+        default = 3000
+
+    [resources.apt]
+    packages = [
+        # Build toolchain.
+        "build-essential",
+        "git",
+        "curl",
+        "pkg-config",
+        # PostgreSQL client library (server is provisioned via the database resource).
+        "libpq-dev",
+        # Ruby build dependencies (rbenv / ruby-build).
+        "zlib1g-dev",
+        "libssl-dev",
+        "libreadline-dev",
+        "libyaml-dev",
+        "libffi-dev",
+        "libgdbm-dev",
+        "libncurses-dev",
+        # Canvas native gem / feature dependencies.
+        "libxml2-dev",
+        "libxmlsec1-dev",
+        "libxmlsec1-openssl",
+        "libidn-dev",
+        "libsqlite3-dev",
+        "imagemagick",
+        # Background/runtime services.
+        "redis-server",
+    ]
+
+    [resources.database]
+    type = "postgresql"
