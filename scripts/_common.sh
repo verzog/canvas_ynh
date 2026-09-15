@@ -99,10 +99,15 @@ compile_assets() {
     ynh_script_progression "Compiling Canvas assets (webpack — this is slow and memory-heavy)..."
 
     pushd "$install_dir" >/dev/null
+        # STYLEGUIDE and API_DOCS are developer docs that pull the development/test
+        # gem groups (e.g. dress_code, yard), which a production bundle excludes —
+        # skip them. BRAND_CONFIGS is skipped pre-migration (see above).
         env RBENV_ROOT="$rbenv_root" \
             PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
             RAILS_ENV=production \
             COMPILE_ASSETS_BRAND_CONFIGS=0 \
+            COMPILE_ASSETS_STYLEGUIDE=0 \
+            COMPILE_ASSETS_API_DOCS=0 \
             bundle exec rake canvas:compile_assets
     popd >/dev/null
 }

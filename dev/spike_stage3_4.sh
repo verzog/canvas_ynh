@@ -163,7 +163,12 @@ yarn install --pure-lockfile || die "yarn install failed."
 # Must precede db:initial_setup: brand-CSS migrations need the gulp-rev asset
 # manifest. COMPILE_ASSETS_BRAND_CONFIGS=0 skips DB-dependent brand configs here.
 say "STAGE 4b: rake canvas:compile_assets (slow, memory-heavy)"
-COMPILE_ASSETS_BRAND_CONFIGS=0 bundle exec rake canvas:compile_assets \
+# Skip styleguide + api_docs (dev-only gems like dress_code/yard) and brand
+# configs (DB-dependent, pre-migration).
+COMPILE_ASSETS_BRAND_CONFIGS=0 \
+COMPILE_ASSETS_STYLEGUIDE=0 \
+COMPILE_ASSETS_API_DOCS=0 \
+    bundle exec rake canvas:compile_assets \
     || die "Asset compile failed — often OOM on < 4 GB RAM, or a Node/yarn issue."
 
 #=================================================
