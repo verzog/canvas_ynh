@@ -89,11 +89,12 @@ systemctl start postgresql redis-server 2>/dev/null || service postgresql start 
 #=================================================
 # THROWAWAY DATABASE (mimics the YunoHost postgresql resource)
 #=================================================
-say "Provisioning throwaway PostgreSQL database '$db_name'"
+say "Provisioning throwaway PostgreSQL database '$db_name' (recreated each run)"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$db_user'" | grep -q 1 \
     || sudo -u postgres psql -c "CREATE ROLE $db_user LOGIN PASSWORD '$db_pwd';"
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='$db_name'" | grep -q 1 \
-    || sudo -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user;"
+# Drop any leftover DB from a previous run so db:initial_setup starts clean.
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS $db_name;"
+sudo -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user;"
 
 #=================================================
 # STAGE 3 — CONFIG FILES (mirrors conf/*.yml templates)
