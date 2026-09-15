@@ -61,20 +61,25 @@ build_ruby() {
     fi
 
     # Build only if this exact version is not already present.
+    # NOTE: we pass RBENV_ROOT via `env` (not a shell prefix assignment) because
+    # RBENV_ROOT may be marked readonly in the ambient shell from a prior rbenv
+    # setup — a shell assignment would then fail with "readonly variable". `env`
+    # sets it only in the child process, which never inherits the readonly flag.
     if [ ! -d "$rbenv_root/versions/$ruby_version" ]; then
         # RUBY_CONFIGURE_OPTS disables docs to speed the build; jemalloc is optional.
-        RBENV_ROOT="$rbenv_root" RUBY_CONFIGURE_OPTS="--disable-install-doc" \
+        env RBENV_ROOT="$rbenv_root" RUBY_CONFIGURE_OPTS="--disable-install-doc" \
             "$rbenv_root/bin/rbenv" install --skip-existing "$ruby_version"
     fi
 
-    RBENV_ROOT="$rbenv_root" "$rbenv_root/bin/rbenv" global "$ruby_version"
+    env RBENV_ROOT="$rbenv_root" "$rbenv_root/bin/rbenv" global "$ruby_version"
 }
 
 # Run a command with the app's rbenv Ruby on PATH, from the install dir.
 # Usage: ruby_exec bundle install --jobs=4
+# Uses `env` so a readonly RBENV_ROOT in the ambient shell can't break us.
 ruby_exec() {
-    RBENV_ROOT="$rbenv_root" \
-    PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
+    env RBENV_ROOT="$rbenv_root" \
+        PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
         "$@"
 }
 

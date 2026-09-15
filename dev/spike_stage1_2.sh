@@ -16,6 +16,12 @@
 
 set -euo pipefail
 
+# If RBENV_ROOT is readonly in the ambient shell (leftover from a prior rbenv
+# setup), our exports below would fail. Re-exec once in a clean environment.
+if [ -z "${_SPIKE_REEXEC:-}" ] && readonly -p 2>/dev/null | grep -q ' RBENV_ROOT='; then
+    exec env -u RBENV_ROOT _SPIKE_REEXEC=1 bash "$0" "$@"
+fi
+
 #=================================================
 # CONFIG — keep in sync with scripts/_common.sh
 #=================================================
