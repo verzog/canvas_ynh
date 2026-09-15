@@ -136,12 +136,13 @@ EOF
 
 cat > config/redis.yml <<EOF
 production:
-  servers:
+  url:
     - redis://localhost:6379/0
 EOF
 
 cat > config/cache_store.yml <<EOF
-production: redis_store
+production:
+  cache_store: redis_cache_store
 EOF
 
 echo "Config written: $(ls config/*.yml | tr '\n' ' ')"

@@ -1,1 +1,3 @@
-production: redis_store
+production:
+  # Use the Redis-backed cache store; server list is taken from redis.yml.
+  cache_store: redis_cache_store
