@@ -71,16 +71,19 @@ say "RAM: ${total_ram_mb} MB (asset compile below needs ~4 GB; may OOM if lower)
 say "Installing/starting PostgreSQL, Redis and Node.js"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y --no-install-recommends postgresql redis-server nodejs npm \
-    || die "apt install of services failed."
+# Only Postgres + Redis via apt. Node is handled below via NodeSource, whose
+# nodejs package bundles npm and Conflicts with the distro npm — so never apt
+# install npm here.
+apt-get install -y --no-install-recommends postgresql redis-server \
+    || die "apt install of postgresql/redis failed."
 
 node_major=$(node -v 2>/dev/null | sed 's/^v\([0-9]*\).*/\1/' || echo 0)
 if [ "${node_major:-0}" -lt "$nodejs_min" ]; then
-    warn "Distro Node is v${node_major}; Canvas needs >= $nodejs_min. Installing NodeSource $nodejs_min.x."
+    warn "Node is v${node_major}; Canvas needs >= $nodejs_min. Installing NodeSource $nodejs_min.x."
     curl -fsSL "https://deb.nodesource.com/setup_${nodejs_min}.x" | bash -
     apt-get install -y nodejs || die "NodeSource Node install failed."
 fi
-echo "Node: $(node -v)"
+echo "Node: $(node -v)  npm: $(npm -v)"
 npm install --global yarn@1.19.1 >/dev/null 2>&1 || die "yarn install (npm global) failed."
 echo "Yarn: $(yarn -v)"
 
