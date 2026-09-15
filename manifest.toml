@@ -27,17 +27,16 @@ multi_instance = false
 # with YunoHost SSO out of the box; LDAP against YunoHost is configurable later.
 ldap = "not_relevant"
 sso = "not_relevant"
-# Canvas must own the root of a domain; it does not run cleanly under a subpath.
-fulldomain = true
 # Sizing: the webpack asset build needs several GB of RAM; runtime needs ~2G.
 disk = "12G"
 ram.build = "4G"
 ram.runtime = "2G"
 
 [install]
+    # A domain question with no matching path question makes this a full-domain
+    # app — Canvas owns the root of its domain and cannot run under a subpath.
     [install.domain]
     type = "domain"
-    full_domain = true
 
     [install.init_main_permission]
     help.en = "Canvas has its own account system. This only controls who can reach the login page."
