@@ -51,8 +51,9 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 - [x] Stage 6 — backup / restore / upgrade / remove
 - [x] Fill the real source `sha256`
 - [x] Standalone spike scripts: Stages 1–2 (`dev/spike_stage1_2.sh`) and Stages 3–4 (`dev/spike_stage3_4.sh`)
-- [ ] Run the spikes on a live Trixie box (Ruby build, bundle, config, db:initial_setup, asset compile)
-- [ ] Validate a full install/upgrade/backup/restore cycle on a live box
+- [x] Spikes pass on a live box (Debian 12/Bookworm, YunoHost 12): Ruby build, bundle, yarn, webpack compile, full migrations, db:initial_setup
+- [ ] Validate a full `yunohost app install` through service start (systemd + nginx)
+- [ ] Validate upgrade/backup/restore cycle on a live box
 - [ ] Optional: ship a prebuilt Ruby+assets bundle to cut install time
 - [ ] Optional: incoming mail (IMAP) and YunoHost LDAP integration
 
