@@ -62,14 +62,11 @@ ram.runtime = "2G"
     default = "en"
 
 [resources]
-    [resources.sources.main]
-    # Canvas releases as dated tags (release/YYYY-MM-DD.NN), not versioned tarballs.
-    # NOTE: GitHub auto-generated archive checksums are not guaranteed stable over
-    # time — if a future re-fetch fails on hash mismatch, recompute and update this.
-    url = "https://github.com/instructure/canvas-lms/archive/refs/tags/release/2026-05-20.143.tar.gz"
-    sha256 = "b3e03aaaff81d68730d67392a135ac3fdfdf022880c66632ab188d2fe084cda3"
-    in_subdir = true
-    autoupdate.strategy = "latest_github_tag"
+    # NOTE: Canvas source is fetched by git clone of the pinned tag in the
+    # install/upgrade scripts (see fetch_canvas_source in scripts/_common.sh),
+    # not via a checksummed [resources.sources.main] tarball. Canvas ships no
+    # stable release asset, and GitHub's auto-generated archive checksums are not
+    # byte-stable across servers, so a pinned sha256 fails unpredictably.
 
     [resources.system_user]
 

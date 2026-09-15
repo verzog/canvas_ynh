@@ -18,6 +18,34 @@ nodejs_version="20"
 rbenv_root="$install_dir/.rbenv"
 
 #=================================================
+# SOURCE FETCH HELPER
+#=================================================
+
+# Fetch the Canvas source for the pinned tag by cloning it with git.
+#
+# We deliberately do NOT use a checksummed [resources.sources.main] tarball:
+# Canvas ships no stable release asset, and GitHub's auto-generated archive
+# tarballs are not byte-stable — the same tag yields different gzip bytes (and
+# thus different sha256) on different CDN nodes/servers, so a pinned checksum
+# fails unpredictably from one machine to the next. A shallow clone of the tag
+# from the official repo over HTTPS is reproducible and avoids that entirely.
+#
+# Copies into the existing $install_dir (created by the install_dir resource) so
+# generated config, vendored gems and built assets already present are preserved
+# on upgrade.
+fetch_canvas_source() {
+    ynh_script_progression "Fetching Canvas source ($canvas_release)..."
+    local tmp
+    tmp="$(mktemp -d)"
+    git clone --depth 1 --branch "$canvas_release" \
+        "https://github.com/instructure/canvas-lms.git" "$tmp/src"
+    ynh_safe_rm "$tmp/src/.git"
+    cp -a "$tmp/src/." "$install_dir/"
+    ynh_safe_rm "$tmp"
+    chown -R "$app:www-data" "$install_dir"
+}
+
+#=================================================
 # RUBY (rbenv) HELPERS
 #=================================================
 

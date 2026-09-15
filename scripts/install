@@ -13,9 +13,9 @@ source /usr/share/yunohost/helpers
 # apt packages (incl. redis-server) and the PostgreSQL database are provisioned
 # automatically by the [resources] block in manifest.toml before this script runs.
 
-ynh_script_progression "Setting up source files..."
-# Deploys the Canvas release tarball into $install_dir.
-ynh_setup_source --dest_dir="$install_dir"
+# Clones the pinned Canvas tag into $install_dir (see _common.sh for why we clone
+# rather than use a checksummed tarball).
+fetch_canvas_source
 
 # A Rails secret used by security.yml (encryption_key must be >= 20 chars).
 encryption_key=$(ynh_string_random --length=40)

@@ -15,10 +15,10 @@ ynh_systemctl --service="$app-jobs" --action="stop"
 # UPGRADE SOURCE (PRESERVE CONFIG + DATA)
 #=================================================
 
-ynh_script_progression "Upgrading source files..."
-# keep prevents the upgrade from clobbering generated config and uploaded files.
-ynh_setup_source --dest_dir="$install_dir" \
-    --keep="config/database.yml config/security.yml config/domain.yml config/outgoing_mail.yml config/redis.yml config/cache_store.yml"
+# Re-clone the pinned Canvas tag over the existing $install_dir. Our generated
+# config/*.yml, vendored gems and built assets are not present in the upstream
+# tree, so the copy-in preserves them (see fetch_canvas_source in _common.sh).
+fetch_canvas_source
 
 #=================================================
 # UPGRADE RUBY + DEPENDENCIES
