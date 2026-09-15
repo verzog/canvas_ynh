@@ -89,11 +89,21 @@ ruby_exec() {
 
 # Compile Canvas frontend assets (webpack). Very memory-hungry — the manifest
 # declares ram.build = 4G for this reason.
+#
+# Must run BEFORE db:migrate/db:initial_setup: some migrations regenerate brand
+# CSS and require the gulp-rev asset manifest to already exist ("you must run
+# gulp rev first"). COMPILE_ASSETS_BRAND_CONFIGS=0 skips the DB-dependent brand
+# config generation here, avoiding a chicken-and-egg with the not-yet-migrated
+# schema; brand files are produced by the migrations once the manifest exists.
 compile_assets() {
     ynh_script_progression "Compiling Canvas assets (webpack — this is slow and memory-heavy)..."
 
     pushd "$install_dir" >/dev/null
-        ruby_exec bundle exec rake canvas:compile_assets
+        env RBENV_ROOT="$rbenv_root" \
+            PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
+            RAILS_ENV=production \
+            COMPILE_ASSETS_BRAND_CONFIGS=0 \
+            bundle exec rake canvas:compile_assets
     popd >/dev/null
 }
 

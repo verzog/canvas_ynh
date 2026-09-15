@@ -63,21 +63,24 @@ ynh_config_add --template="redis.yml"         --destination="$install_dir/config
 ynh_config_add --template="cache_store.yml"   --destination="$install_dir/config/cache_store.yml"
 
 #=================================================
-# STAGE 4 — DATABASE SCHEMA + FIRST ADMIN + ASSETS
+# STAGE 4 — ASSETS, THEN DATABASE SCHEMA + FIRST ADMIN
 #=================================================
+# Assets MUST be compiled before db:initial_setup: some migrations regenerate
+# brand CSS and need the gulp-rev asset manifest to already exist.
+compile_assets
 
 ynh_script_progression "Initialising the Canvas database (schema + first admin)..."
 # db:initial_setup is normally interactive; these env vars drive it non-interactively.
 pushd "$install_dir" >/dev/null
-    RAILS_ENV=production \
-    CANVAS_LMS_ADMIN_EMAIL="$admin_email" \
-    CANVAS_LMS_ADMIN_PASSWORD="$password" \
-    CANVAS_LMS_ACCOUNT_NAME="$app" \
-    CANVAS_LMS_STATS_COLLECTION="opt_out" \
-        ruby_exec bundle exec rake db:initial_setup
+    env RBENV_ROOT="$rbenv_root" \
+        PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
+        RAILS_ENV=production \
+        CANVAS_LMS_ADMIN_EMAIL="$admin_email" \
+        CANVAS_LMS_ADMIN_PASSWORD="$password" \
+        CANVAS_LMS_ACCOUNT_NAME="$app" \
+        CANVAS_LMS_STATS_COLLECTION="opt_out" \
+        bundle exec rake db:initial_setup
 popd >/dev/null
-
-compile_assets
 
 #=================================================
 # STAGE 5 — SYSTEM SERVICES (WEB + JOBS) + NGINX

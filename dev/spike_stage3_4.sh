@@ -154,24 +154,24 @@ say "STAGE 4a: yarn install"
 yarn install --pure-lockfile || die "yarn install failed."
 
 #=================================================
-# STAGE 4b — db:initial_setup (schema + first admin)
+# STAGE 4b — asset compile (the heavy one) — BEFORE db init
 #=================================================
-say "STAGE 4b: rake db:initial_setup (non-interactive first admin)"
-# NOTE: this mirrors scripts/install exactly. If it turns out db:create or
-# db:migrate must run first, that's a finding to fold back into the package.
+# Must precede db:initial_setup: brand-CSS migrations need the gulp-rev asset
+# manifest. COMPILE_ASSETS_BRAND_CONFIGS=0 skips DB-dependent brand configs here.
+say "STAGE 4b: rake canvas:compile_assets (slow, memory-heavy)"
+COMPILE_ASSETS_BRAND_CONFIGS=0 bundle exec rake canvas:compile_assets \
+    || die "Asset compile failed — often OOM on < 4 GB RAM, or a Node/yarn issue."
+
+#=================================================
+# STAGE 4c — db:initial_setup (schema + first admin)
+#=================================================
+say "STAGE 4c: rake db:initial_setup (non-interactive first admin)"
 CANVAS_LMS_ADMIN_EMAIL="$admin_email" \
 CANVAS_LMS_ADMIN_PASSWORD="$admin_pwd" \
 CANVAS_LMS_ACCOUNT_NAME="canvas_spike" \
 CANVAS_LMS_STATS_COLLECTION="opt_out" \
     bundle exec rake db:initial_setup \
-    || die "db:initial_setup failed — inspect the log (may need db:create/db:migrate first)."
-
-#=================================================
-# STAGE 4c — asset compile (the heavy one)
-#=================================================
-say "STAGE 4c: rake canvas:compile_assets (slow, memory-heavy)"
-bundle exec rake canvas:compile_assets \
-    || die "Asset compile failed — often OOM on < 4 GB RAM, or a Node/yarn issue."
+    || die "db:initial_setup failed — inspect the log."
 
 #=================================================
 # RESULT

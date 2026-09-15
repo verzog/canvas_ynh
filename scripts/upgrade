@@ -44,12 +44,16 @@ popd >/dev/null
 # DATABASE MIGRATIONS + ASSET RECOMPILE
 #=================================================
 
+# Compile assets before migrating: brand-CSS migrations need the asset manifest.
+compile_assets
+
 ynh_script_progression "Running database migrations..."
 pushd "$install_dir" >/dev/null
-    RAILS_ENV=production ruby_exec bundle exec rake db:migrate
+    env RBENV_ROOT="$rbenv_root" \
+        PATH="$rbenv_root/shims:$rbenv_root/bin:$PATH" \
+        RAILS_ENV=production \
+        bundle exec rake db:migrate
 popd >/dev/null
-
-compile_assets
 
 #=================================================
 # RECONFIGURE SYSTEM INTEGRATION
