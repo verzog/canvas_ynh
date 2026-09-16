@@ -1,0 +1,8 @@
+# Background job workers (inst-jobs / delayed_job). Each "workers" entry spawns
+# that many worker processes pulling from the named queue. Kept modest because
+# every worker boots a full Rails process (~0.5-1 GB); raise "workers" only if the
+# server has the RAM to spare.
+production:
+  workers:
+    - queue: canvas_queue
+      workers: 2

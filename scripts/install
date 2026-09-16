@@ -75,6 +75,8 @@ ynh_config_add --template="domain.yml"        --destination="$install_dir/config
 ynh_config_add --template="outgoing_mail.yml" --destination="$install_dir/config/outgoing_mail.yml"
 ynh_config_add --template="redis.yml"         --destination="$install_dir/config/redis.yml"
 ynh_config_add --template="cache_store.yml"   --destination="$install_dir/config/cache_store.yml"
+# Required by the canvas-jobs worker (inst-jobs); the web server does not read it.
+ynh_config_add --template="delayed_jobs.yml"  --destination="$install_dir/config/delayed_jobs.yml"
 
 #=================================================
 # STAGE 4 — ASSETS, THEN DATABASE SCHEMA + FIRST ADMIN
