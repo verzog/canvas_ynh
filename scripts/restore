@@ -8,10 +8,11 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 ynh_script_progression "Restoring the app files..."
-ynh_restore --src_path="$install_dir"
+ynh_restore "$install_dir"
 
 ynh_script_progression "Restoring user data..."
-ynh_restore --src_path="$data_dir" --not_mandatory
+# ynh_restore silently skips $data_dir if it wasn't present in the archive.
+ynh_restore "$data_dir"
 
 #=================================================
 # RESTORE THE POSTGRESQL DATABASE
@@ -25,9 +26,9 @@ ynh_psql_db_shell < ./db.sql
 #=================================================
 
 ynh_script_progression "Restoring system configuration..."
-ynh_restore --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-ynh_restore --src_path="/etc/systemd/system/$app-web.service"
-ynh_restore --src_path="/etc/systemd/system/$app-jobs.service"
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore "/etc/systemd/system/$app-web.service"
+ynh_restore "/etc/systemd/system/$app-jobs.service"
 
 # Re-register Node.js for this app (versioned install is per-app).
 ynh_nodejs_install

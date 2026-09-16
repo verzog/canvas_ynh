@@ -10,15 +10,15 @@ source /usr/share/yunohost/helpers
 ynh_print_info "Declaring files to be backed up..."
 
 # App code, vendored gems, built assets and rbenv Ruby (large — see README).
-ynh_backup --src_path="$install_dir"
+ynh_backup "$install_dir"
 
-# Uploaded files and generated exports.
-ynh_backup --src_path="$data_dir" --is_big
+# Uploaded files and generated exports. ynh_backup auto-detects $data_dir as data.
+ynh_backup "$data_dir"
 
 # System integration.
-ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-ynh_backup --src_path="/etc/systemd/system/$app-web.service"
-ynh_backup --src_path="/etc/systemd/system/$app-jobs.service"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup "/etc/systemd/system/$app-web.service"
+ynh_backup "/etc/systemd/system/$app-jobs.service"
 
 #=================================================
 # BACK UP THE POSTGRESQL DATABASE
