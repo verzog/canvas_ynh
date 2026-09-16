@@ -55,6 +55,9 @@ pushd "$install_dir" >/dev/null
         bundle exec rake db:migrate
 popd >/dev/null
 
+# Build steps ran as root; hand the tree back to the service user.
+chown -R "$app:www-data" "$install_dir"
+
 #=================================================
 # RECONFIGURE SYSTEM INTEGRATION
 #=================================================
@@ -69,7 +72,7 @@ ynh_config_add_nginx
 #=================================================
 
 ynh_script_progression "Starting Canvas services..."
-ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="systemd"
 ynh_systemctl --service="$app-jobs" --action="start"
 
 ynh_script_progression "Upgrade of Canvas LMS completed"

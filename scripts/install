@@ -82,6 +82,11 @@ pushd "$install_dir" >/dev/null
         bundle exec rake db:initial_setup
 popd >/dev/null
 
+# The build steps above ran as root and created root-owned files (vendor/bundle,
+# node_modules, public/dist, tmp, log). The services run as "$app", so hand the
+# whole tree back to that user or Puma/jobs can't write their cache/logs/tmp.
+chown -R "$app:www-data" "$install_dir"
+
 #=================================================
 # STAGE 5 — SYSTEM SERVICES (WEB + JOBS) + NGINX
 #=================================================
@@ -91,8 +96,8 @@ ynh_script_progression "Configuring system services..."
 ynh_config_add_systemd --service="$app-web"  --template="canvas-web.service"
 ynh_config_add_systemd --service="$app-jobs" --template="canvas-jobs.service"
 
-yunohost service add "$app-web"  --description="Canvas LMS web server" --log="/var/log/$app/production.log"
-yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="/var/log/$app/delayed_job.log"
+yunohost service add "$app-web"  --description="Canvas LMS web server" --log="$install_dir/log/production.log"
+yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="$install_dir/log/delayed_job.log"
 
 ynh_script_progression "Configuring NGINX web server..."
 ynh_config_add_nginx
@@ -102,7 +107,8 @@ ynh_config_add_nginx
 #=================================================
 
 ynh_script_progression "Starting Canvas services..."
-ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+# Puma prints "Listening on" to stdout -> journald, so wait on the journal.
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="systemd"
 ynh_systemctl --service="$app-jobs" --action="start"
 
 #=================================================

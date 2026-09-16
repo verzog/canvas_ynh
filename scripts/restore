@@ -32,15 +32,15 @@ ynh_restore --src_path="/etc/systemd/system/$app-jobs.service"
 # Re-register Node.js for this app (versioned install is per-app).
 ynh_nodejs_install
 
-yunohost service add "$app-web"  --description="Canvas LMS web server" --log="/var/log/$app/production.log"
-yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="/var/log/$app/delayed_job.log"
+yunohost service add "$app-web"  --description="Canvas LMS web server" --log="$install_dir/log/production.log"
+yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --log="$install_dir/log/delayed_job.log"
 
 #=================================================
 # START SERVICES + RELOAD NGINX
 #=================================================
 
 ynh_script_progression "Starting Canvas services..."
-ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="/var/log/$app/production.log"
+ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="systemd"
 ynh_systemctl --service="$app-jobs" --action="start"
 
 ynh_systemctl --service=nginx --action=reload
