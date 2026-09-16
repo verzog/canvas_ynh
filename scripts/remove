@@ -29,6 +29,17 @@ ynh_config_remove_nginx
 ynh_script_progression "Removing Node.js..."
 ynh_nodejs_remove
 
+#=================================================
+# REMOVE REDIS DATABASE
+#=================================================
+
+# Free (flush) the dedicated Redis logical database allocated at install time, so a
+# reinstall gets a clean one and no stale cache is left behind (see scripts/install).
+if [ -n "${redis_db:-}" ]; then
+    ynh_script_progression "Flushing the app's Redis database..."
+    ynh_redis_remove_db "$redis_db"
+fi
+
 # The apt packages, PostgreSQL database, system user, install_dir and data_dir
 # declared in manifest.toml are removed automatically by the resource system.
 

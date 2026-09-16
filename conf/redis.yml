@@ -1,4 +1,3 @@
 production:
-  # Current Canvas expects a "url:" list (the older "servers:" key is gone).
   url:
-    - redis://localhost:6379/0
+    - redis://localhost:6379/__REDIS_DB__

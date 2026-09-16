@@ -21,6 +21,16 @@ fetch_canvas_source
 encryption_key=$(ynh_string_random --length=40)
 ynh_app_setting_set --key=encryption_key --value="$encryption_key"
 
+# Allocate a dedicated, empty Redis logical database for Canvas (config/redis.yml).
+# Canvas caches its entire Setting hash — including encryption_key_hash — in Redis
+# under the "all_settings" key. Sharing the default DB 0 lets a previous install's
+# cached hash survive (Redis is a persistent system service that install/rollback
+# never flush) and mismatch this install's freshly generated encryption_key, which
+# aborts db:initial_setup with "encryption key is incorrect". A freshly allocated DB
+# is empty, so there is no stale hash to collide with.
+redis_db=$(ynh_redis_get_free_db)
+ynh_app_setting_set --key=redis_db --value="$redis_db"
+
 # Install Node.js (Canvas engines: node >= 20) and Yarn classic.
 ynh_script_progression "Installing Node.js and Yarn..."
 ynh_nodejs_install
