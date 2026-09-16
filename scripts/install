@@ -17,9 +17,13 @@ source /usr/share/yunohost/helpers
 # rather than use a checksummed tarball).
 fetch_canvas_source
 
-# A Rails secret used by security.yml (encryption_key must be >= 20 chars).
+# Rails secrets used by security.yml. encryption_key must be >= 20 chars; each
+# jwt_encryption_keys entry must be exactly 64 chars (Canvas raises "jwt encryption
+# key required" and 500s the dashboard otherwise).
 encryption_key=$(ynh_string_random --length=40)
 ynh_app_setting_set --key=encryption_key --value="$encryption_key"
+jwt_encryption_key=$(ynh_string_random --length=64)
+ynh_app_setting_set --key=jwt_encryption_key --value="$jwt_encryption_key"
 
 # Allocate a dedicated, empty Redis logical database for Canvas (config/redis.yml).
 # Canvas caches its entire Setting hash — including encryption_key_hash — in Redis

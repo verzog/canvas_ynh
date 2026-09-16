@@ -1,3 +1,7 @@
 production:
   # Used by Canvas to encrypt sensitive data at rest. Must be >= 20 characters.
   encryption_key: "__ENCRYPTION_KEY__"
+  # Keys used to encrypt/decrypt Canvas service JWTs. The first entry encrypts new
+  # tokens; all entries can decrypt. Each key MUST be exactly 64 characters.
+  jwt_encryption_keys:
+    - "__JWT_ENCRYPTION_KEY__"
