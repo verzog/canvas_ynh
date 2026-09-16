@@ -23,13 +23,14 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 ## Status of this package
 
 > [!IMPORTANT]
-> This is an **early, work-in-progress** package. The scripts follow YunoHost
-> packaging v2 conventions and Canvas's official production-install steps, but
-> they have **not yet been validated end-to-end on a live YunoHost 12.x
-> (Debian Trixie) box.** See the roadmap below.
+> This is an **early, work-in-progress** package. A full `yunohost app install`
+> has now completed end-to-end on a live YunoHost 12.1 box (Debian 12/Bookworm):
+> Canvas builds, installs, starts under systemd behind nginx, and the login page
+> and admin dashboard render. Upgrade / backup / restore are **not yet validated
+> on a live box** — see the roadmap below.
 >
 > Before attempting the full YunoHost install, run `dev/spike_stage1_2.sh` on a
-> throwaway Trixie box — it validates the riskiest part (system deps + Ruby 3.4
+> throwaway box — it validates the riskiest part (system deps + Ruby 3.4
 > build + `bundle install`) in isolation, without YunoHost helpers.
 
 ### Architecture notes
@@ -52,8 +53,10 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 - [x] Fill the real source `sha256`
 - [x] Standalone spike scripts: Stages 1–2 (`dev/spike_stage1_2.sh`) and Stages 3–4 (`dev/spike_stage3_4.sh`)
 - [x] Spikes pass on a live box (Debian 12/Bookworm, YunoHost 12): Ruby build, bundle, yarn, webpack compile, full migrations, db:initial_setup
-- [ ] Validate a full `yunohost app install` through service start (systemd + nginx)
+- [x] Validate a full `yunohost app install` through service start, login and dashboard (live YunoHost 12.1 / Debian 12). Required two live-only fixes: a dedicated Redis DB (`ynh_redis_get_free_db`) so `db:initial_setup` can't inherit a stale `encryption_key_hash`, and `jwt_encryption_keys` in `security.yml`
+- [ ] Verify the `canvas-jobs` background worker (delayed_job) stays running
 - [ ] Validate upgrade/backup/restore cycle on a live box
+- [ ] Re-run a clean install from the fixed package to confirm no manual steps are needed
 - [ ] Optional: ship a prebuilt Ruby+assets bundle to cut install time
 - [ ] Optional: incoming mail (IMAP) and YunoHost LDAP integration
 
