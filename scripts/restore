@@ -41,8 +41,12 @@ yunohost service add "$app-jobs" --description="Canvas LMS background jobs" --lo
 #=================================================
 
 ynh_script_progression "Starting Canvas services..."
-ynh_systemctl --service="$app-web"  --action="start" --wait_until="Listening on" --log_path="systemd"
-ynh_systemctl --service="$app-jobs" --action="start"
+# Use restart, not start: if a stale/enabled unit left canvas-web already running
+# (e.g. resurrected on a reboot), a plain "start" is a no-op and prints no fresh
+# "Listening on" line, so the readiness wait below would time out and fail the
+# restore. restart guarantees a fresh boot and a fresh readiness marker.
+ynh_systemctl --service="$app-web"  --action="restart" --wait_until="Listening on" --log_path="systemd"
+ynh_systemctl --service="$app-jobs" --action="restart"
 
 ynh_systemctl --service=nginx --action=reload
 

@@ -19,6 +19,18 @@ fi
 ynh_config_remove_systemd --service="$app-web"
 ynh_config_remove_systemd --service="$app-jobs"
 
+# Belt-and-suspenders: make sure the units are really stopped, disabled and gone.
+# ynh_config_remove_systemd has been observed to leave the unit files behind on
+# this stack; a leftover *enabled* unit is auto-started again on the next reboot,
+# resurrecting an orphaned service that then blocks a later restore/reinstall.
+for _svc in "$app-web" "$app-jobs"; do
+    systemctl stop "$_svc" 2>/dev/null || true
+    systemctl disable "$_svc" 2>/dev/null || true
+    ynh_safe_rm "/etc/systemd/system/$_svc.service"
+done
+systemctl daemon-reload
+systemctl reset-failed "$app-web" "$app-jobs" 2>/dev/null || true
+
 #=================================================
 # REMOVE NGINX + NODE
 #=================================================
