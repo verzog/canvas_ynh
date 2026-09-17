@@ -54,9 +54,11 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 - [x] Standalone spike scripts: Stages 1–2 (`dev/spike_stage1_2.sh`) and Stages 3–4 (`dev/spike_stage3_4.sh`)
 - [x] Spikes pass on a live box (Debian 12/Bookworm, YunoHost 12): Ruby build, bundle, yarn, webpack compile, full migrations, db:initial_setup
 - [x] Validate a full `yunohost app install` through service start, login and dashboard (live YunoHost 12.1 / Debian 12). Required two live-only fixes: a dedicated Redis DB (`ynh_redis_get_free_db`) so `db:initial_setup` can't inherit a stale `encryption_key_hash`, and `jwt_encryption_keys` in `security.yml`
-- [ ] Verify the `canvas-jobs` background worker (delayed_job) stays running
-- [ ] Validate upgrade/backup/restore cycle on a live box
+- [x] Verify the `canvas-jobs` background worker (delayed_job) runs — needs `config/delayed_jobs.yml`
+- [x] Validate upgrade / backup / restore cycle on a live box (YunoHost 12.1 / Debian 12). Required fixes: v2.1 positional `ynh_backup`/`ynh_restore` syntax; `remove` must force-delete the systemd units (else an enabled orphan is resurrected on reboot); `restore` must `restart` (not `start`) canvas-web so the readiness wait sees a fresh "Listening on"
 - [ ] Re-run a clean install from the fixed package to confirm no manual steps are needed
+- [ ] Optional: gzip is enabled and `/dist/` assets are cached in nginx; consider tuning further to reduce outbound traffic
+- [ ] Optional: outgoing email needs the server's port 25 unblocked or an SMTP relay (provider blocks port 25 by default)
 - [ ] Optional: ship a prebuilt Ruby+assets bundle to cut install time
 - [ ] Optional: incoming mail (IMAP) and YunoHost LDAP integration
 
