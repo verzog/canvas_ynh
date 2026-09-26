@@ -10,6 +10,11 @@ WorkingDirectory=__INSTALL_DIR__
 Environment=RAILS_ENV=production
 Environment=RBENV_ROOT=__INSTALL_DIR__/.rbenv
 Environment=PATH=__INSTALL_DIR__/.rbenv/shims:__INSTALL_DIR__/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Keep temp files (e.g. attachment_fu image thumbnails) in the app's own
+# canvas-owned tmp/, not shared /tmp. Install-time rake tasks run as root and
+# create /tmp/attachment_fu as root, which then blocks the canvas user's uploads
+# with Errno::EACCES; a private TMPDIR avoids that class of problem entirely.
+Environment=TMPDIR=__INSTALL_DIR__/tmp
 ExecStart=__INSTALL_DIR__/.rbenv/shims/bundle exec puma -e production -b tcp://127.0.0.1:__PORT__
 Restart=always
 RestartSec=5

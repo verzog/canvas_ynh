@@ -101,6 +101,9 @@ popd >/dev/null
 # The build steps above ran as root and created root-owned files (vendor/bundle,
 # node_modules, public/dist, tmp, log). The services run as "$app", so hand the
 # whole tree back to that user or Puma/jobs can't write their cache/logs/tmp.
+# Ensure the app-local tmp dir exists (the services set TMPDIR here so image
+# thumbnails etc. are written under a canvas-owned dir, never shared /tmp).
+mkdir -p "$install_dir/tmp"
 chown -R "$app:www-data" "$install_dir"
 
 #=================================================

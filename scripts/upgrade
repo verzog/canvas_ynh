@@ -56,6 +56,7 @@ pushd "$install_dir" >/dev/null
 popd >/dev/null
 
 # Build steps ran as root; hand the tree back to the service user.
+mkdir -p "$install_dir/tmp"
 chown -R "$app:www-data" "$install_dir"
 
 #=================================================
