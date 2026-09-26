@@ -5,3 +5,10 @@ production:
   domain: "__DOMAIN__"
   outgoing_address: "no-reply@__DOMAIN__"
   default_name: "Canvas"
+  # The Canvas -> Postfix hop is loopback, so do NOT attempt STARTTLS: Ruby 3.4's
+  # SMTP client verifies STARTTLS server certs by default, and Postfix presents a
+  # cert for the mail hostname (not "localhost"), so verification fails with a
+  # hostname mismatch and mail silently never leaves Canvas. Plain SMTP over
+  # loopback is safe; Postfix then relays onward (with TLS) to the smarthost.
+  enable_starttls_auto: false
+  openssl_verify_mode: "none"
