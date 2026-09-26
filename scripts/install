@@ -17,6 +17,9 @@ source /usr/share/yunohost/helpers
 # rather than use a checksummed tarball).
 fetch_canvas_source
 
+# Fetch the QTI migration tool so quiz/QTI imports work (see _common.sh).
+install_qti_tool
+
 # Rails secrets used by security.yml. encryption_key must be >= 20 chars; each
 # jwt_encryption_keys entry must be exactly 64 chars (Canvas raises "jwt encryption
 # key required" and 500s the dashboard otherwise).

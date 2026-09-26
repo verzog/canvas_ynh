@@ -46,6 +46,26 @@ fetch_canvas_source() {
 }
 
 #=================================================
+# QTI QUIZ-IMPORT CONVERTER
+#=================================================
+
+# Install the QTIMigrationTool so Canvas can import QTI quiz packages (Course →
+# Settings → Import Course Content). Canvas looks for vendor/QTIMigrationTool/
+# migrate.py; without it, QTI imports fail with "Can't export QTI without the
+# python converter tool installed." It's a Python 3 script (deps: python3-lxml,
+# provided by the apt resource) and is NOT part of the Canvas repo, so we fetch it.
+# Idempotent: skips if already present (e.g. preserved across an upgrade).
+install_qti_tool() {
+    local qti_dir="$install_dir/vendor/QTIMigrationTool"
+    if [ ! -f "$qti_dir/migrate.py" ]; then
+        ynh_script_progression "Installing the QTI migration tool (quiz import)..."
+        git clone --depth 1 https://github.com/instructure/QTIMigrationTool.git "$qti_dir"
+        ynh_safe_rm "$qti_dir/.git"
+        chmod +x "$qti_dir/migrate.py"
+    fi
+}
+
+#=================================================
 # RUBY (rbenv) HELPERS
 #=================================================
 

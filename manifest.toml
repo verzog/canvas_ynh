@@ -109,6 +109,9 @@ ram.runtime = "2G"
         "libidn-dev",
         "libsqlite3-dev",
         "imagemagick",
+        # QTI quiz-import converter: Canvas's vendor/QTIMigrationTool is a Python 3
+        # script that needs lxml (see install_qti_tool in scripts/_common.sh).
+        "python3-lxml",
         # Background/runtime services.
         "redis-server",
     ]

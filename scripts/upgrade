@@ -20,6 +20,9 @@ ynh_systemctl --service="$app-jobs" --action="stop"
 # tree, so the copy-in preserves them (see fetch_canvas_source in _common.sh).
 fetch_canvas_source
 
+# Ensure the QTI migration tool is present (quiz/QTI imports); see _common.sh.
+install_qti_tool
+
 #=================================================
 # UPGRADE RUBY + DEPENDENCIES
 #=================================================
