@@ -56,6 +56,8 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 - [x] Validate a full `yunohost app install` through service start, login and dashboard (live YunoHost 12.1 / Debian 12). Required two live-only fixes: a dedicated Redis DB (`ynh_redis_get_free_db`) so `db:initial_setup` can't inherit a stale `encryption_key_hash`, and `jwt_encryption_keys` in `security.yml`
 - [x] Verify the `canvas-jobs` background worker (delayed_job) runs — needs `config/delayed_jobs.yml`
 - [x] Validate upgrade / backup / restore cycle on a live box (YunoHost 12.1 / Debian 12). Required fixes: v2.1 positional `ynh_backup`/`ynh_restore` syntax; `remove` must force-delete the systemd units (else an enabled orphan is resurrected on reboot); `restore` must `restart` (not `start`) canvas-web so the readiness wait sees a fresh "Listening on"
+- [x] File / image uploads work. Required fixes: `client_max_body_size` on nginx `location /` (uploads POST there before try_files → @canvas, else HTTP 413), and `TMPDIR` pointed at the app's canvas-owned `tmp/` (attachment_fu writes thumbnails to `$TMPDIR/attachment_fu`; the default `/tmp/attachment_fu` gets created by root during install and then blocks the canvas user with Errno::EACCES)
+- [x] Google OAuth login configurable in Canvas (Login Attribute = email; JIT off to keep it closed to existing accounts)
 - [ ] Re-run a clean install from the fixed package to confirm no manual steps are needed
 - [ ] Optional: gzip is enabled and `/dist/` assets are cached in nginx; consider tuning further to reduce outbound traffic
 - [ ] Optional: outgoing email needs the server's port 25 unblocked or an SMTP relay (provider blocks port 25 by default)
