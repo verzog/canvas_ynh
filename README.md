@@ -60,7 +60,7 @@ Canvas LMS is the open-source Learning Management System developed by [Instructu
 - [x] Google OAuth login configurable in Canvas (Login Attribute = email; JIT off to keep it closed to existing accounts)
 - [ ] Re-run a clean install from the fixed package to confirm no manual steps are needed
 - [ ] Optional: gzip is enabled and `/dist/` assets are cached in nginx; consider tuning further to reduce outbound traffic
-- [ ] Optional: outgoing email needs the server's port 25 unblocked or an SMTP relay (provider blocks port 25 by default)
+- [x] Outgoing email works via an SMTP relay. Hosts commonly block outbound port 25, so YunoHost's direct sending fails; configuring an SMTP relay (YunoHost Settings → Email → `email.smtp.smtp_relay_*`, e.g. Gmail on 587 with an App Password, or a transactional provider) fixes it. Canvas mail sent from the app's own `nohost.me` domain is DKIM-signed (auto-managed by YunoHost dyndns) and delivers to the inbox. Note: mail from the server's bare custom domain will bounce unless that domain's DKIM/SPF are published in its DNS
 - [ ] Optional: ship a prebuilt Ruby+assets bundle to cut install time
 - [ ] Optional: incoming mail (IMAP) and YunoHost LDAP integration
 
